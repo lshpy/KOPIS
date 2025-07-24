@@ -9,7 +9,7 @@ import seaborn as sns
 st.title("📊 내한 공연 적합성 분석 및 클러스터링")
 
 # 데이터 불러오기
-df = pd.read_excel("data/최종_적합성분석결과.xlsx")
+df = pd.read_excel("data/최종.xlsx")
 df = df.dropna(subset=["공연벡터"])
 df["공연벡터"] = df["공연벡터"].apply(eval)
 
