@@ -23,31 +23,34 @@ genre_score_map = {
 }
 
 # 🔍 뉴스 검색량 수집 함수
-def get_news_count_by_scroll(query, delay=1.5):
-    encoded_query = quote(query)
-    url = f"https://search.naver.com/search.naver?where=news&query={encoded_query}"
-
+def get_news_search_count(keyword):
     options = Options()
-    options.add_argument("--headless")
+    options.add_argument("--headless")  # 창 안 띄움
+    options.add_argument("--disable-gpu")
     options.add_argument("--no-sandbox")
     options.add_argument("--disable-dev-shm-usage")
+
     driver = webdriver.Chrome(options=options)
-
+    
+    url = f"https://search.naver.com/search.naver?where=news&query={keyword}"
     driver.get(url)
-    last_height = driver.execute_script("return document.body.scrollHeight")
 
-    while True:
-        driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
-        time.sleep(delay)
-        new_height = driver.execute_script("return document.body.scrollHeight")
-        if new_height == last_height:
-            break
-        last_height = new_height
-
-    titles = driver.find_elements(By.CSS_SELECTOR, "span.sds-comps-text-type-headline1")
-    count = len([t for t in titles if t.text.strip()])
+    # 예시: 검색 결과 수 추출
+    from selenium.webdriver.common.by import By
+    import re
+    try:
+        element = driver.find_element(By.CLASS_NAME, "title_desc")
+        text = element.text
+        match = re.search(r'[\d,]+건', text)
+        if match:
+            count = int(match.group().replace(',', '').replace('건', ''))
+        else:
+            count = 0
+    except:
+        count = 0
     driver.quit()
     return count
+
 
 # 💸 티켓가 추출 함수
 def extract_first_ticket_price(text):
