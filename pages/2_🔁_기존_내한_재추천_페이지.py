@@ -3,6 +3,15 @@ import pandas as pd
 import numpy as np
 from utils.recommend_utils import compute_capacity_similarity
 from sklearn.metrics.pairwise import cosine_similarity
+# 페이지 상단에 추가
+import matplotlib.pyplot as plt
+import matplotlib.font_manager as fm
+
+plt.rcParams['font.family'] = 'Malgun Gothic'  # Windows
+# plt.rcParams['font.family'] = 'AppleGothic'  # macOS
+# plt.rcParams['font.family'] = 'NanumGothic'  # Linux 설치 필요
+plt.rcParams['axes.unicode_minus'] = False
+
 
 st.title("🔁 기존 내한 공연 재추천")
 
