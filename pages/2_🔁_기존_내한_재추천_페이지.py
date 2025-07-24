@@ -7,7 +7,7 @@ from sklearn.metrics.pairwise import cosine_similarity
 st.title("🔁 기존 내한 공연 재추천")
 
 # 데이터 불러오기
-df = pd.read_excel("data/최종_적합성분석결과.xlsx")
+df = pd.read_excel("data/최종.xlsx")
 df = df[df["공연장벡터"].notna()]
 df["공연벡터"] = df["공연벡터"].apply(eval)
 df["공연장벡터"] = df["공연장벡터"].apply(eval)
