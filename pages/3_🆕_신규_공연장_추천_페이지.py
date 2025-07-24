@@ -9,7 +9,7 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome.options import Options
 from utils.recommend_utils import recommend_venues
 
-# 장르 점수 맵
+# 🎭 장르 점수 맵
 genre_score_map = {
     "연극": 0.5,
     "무용(서양/한국무용)": 0.6,
@@ -22,7 +22,7 @@ genre_score_map = {
     "뮤지컬": 0.7
 }
 
-# 뉴스 검색량 수집
+# 🔍 뉴스 검색량 수집 함수
 def get_news_count_by_scroll(query, delay=1.5):
     encoded_query = quote(query)
     url = f"https://search.naver.com/search.naver?where=news&query={encoded_query}"
@@ -49,12 +49,12 @@ def get_news_count_by_scroll(query, delay=1.5):
     driver.quit()
     return count
 
-# 티켓가 추출
+# 💸 티켓가 추출 함수
 def extract_first_ticket_price(text):
     match = re.search(r'(\d[\d,]*)', str(text))
     return int(match.group(1).replace(",", "")) if match else None
 
-# 공연벡터 생성 함수
+# 📐 공연 벡터 생성 함수
 def create_perf_vector(title, cast, genre, price):
     query = f"{title} {cast}" if cast else title
     count = get_news_count_by_scroll(query)
@@ -67,9 +67,9 @@ def create_perf_vector(title, cast, genre, price):
 
     return [round(price_norm, 3), round(genre_score, 2), round(search_norm, 3)]
 
-# Streamlit UI
+# 🚀 Streamlit 앱 실행 함수
 def render():
-    st.title("🆕 신규 공연 입력 → 공연장 추천")
+    st.title("🆕 신규 내한 공연 정보 입력 → 공연장 추천")
 
     st.subheader("1️⃣ 공연 정보 입력")
     title = st.text_input("공연 제목")
@@ -81,6 +81,7 @@ def render():
     w1 = st.slider("티켓가 가중치", 0.0, 1.0, 0.5)
     w2 = st.slider("장르 가중치", 0.0, 1.0, 0.3)
     w3 = st.slider("검색량 가중치", 0.0, 1.0, 0.2)
+    alpha = st.slider("🎯 종합유사도에서 벡터 유사도 비중 (α)", 0.0, 1.0, 0.7)
 
     if st.button("🚀 벡터 생성 및 추천 실행"):
         if not title or not genre or not price:
@@ -90,16 +91,26 @@ def render():
         perf_vector = create_perf_vector(title, cast, genre, price)
         st.success(f"🎯 생성된 공연 벡터: {perf_vector}")
 
-        # 데이터 로드 및 추천
+        # 데이터 로드 및 전처리
         df = pd.read_excel("data/최종.xlsx")
         venue_df = pd.read_excel("data/공연시설DB.xlsx")
-        df = df[df["공연장벡터"].notna()]
+        df = df[df["공연장벡터"].notna()].copy()
         df["공연장벡터"] = df["공연장벡터"].apply(eval)
+
+        # 객석 수 등 공연장 정보 병합
         df = df.merge(venue_df, on="공연시설ID", how="left")
 
-        results = recommend_venues(perf_vector, df, weights=[w1, w2, w3])
+        # 추천 수행
+        results = recommend_venues(perf_vector, df, weights=[w1, w2, w3], alpha=alpha)
+
+        # 결과 출력
+        st.subheader("✅ 추천 공연장 리스트 (유사도 기반 상위)")
         st.dataframe(results[[
-            "공연시설명", "공연시설ID", "유사도", "객석 수",
+            "공연시설명", "공연시설ID", "유사도", "객석수유사도", "종합유사도", "객석 수",
             "레스토랑", "카페", "편의점",
             "장애시설-주차장", "장애시설-화장실", "장애시설-경사로", "장애시설-엘리베이터"
-        ]])
+        ]].head(10))
+
+# 🟢 이 모듈이 직접 실행될 때만 앱 실행
+if __name__ == "__main__":
+    render()
