@@ -1,20 +1,27 @@
 import streamlit as st
-import pandas as pd
-import numpy as np
-from sklearn.metrics.pairwise import cosine_similarity
 
-# 데이터 불러오기
-@st.cache_data
-def load_data():
-    final = pd.read_excel("data/최종.xlsx")
-    facility = pd.read_excel("data/공연시설DB.xlsx")
-    concert = pd.read_excel("data/내한공연DB.xlsx")
+# 페이지 설정
+st.set_page_config(
+    page_title="공연장 추천 시스템 🎭",
+    page_icon="🎭",
+    layout="wide",
+)
 
-    final["공연벡터"] = final["공연벡터"].apply(eval)
-    final["공연장벡터"] = final["공연장벡터"].apply(eval)
+# 메인 화면
+st.title("🎭 공연장 추천 시스템")
+st.markdown("""
+이 웹앱은 **공연벡터 및 공연장벡터 기반 추천 시스템**으로,  
+사용자가 선택하거나 입력한 공연의 특성을 바탕으로 **가장 어울리는 공연장**을 추천합니다.
 
-    merged = pd.merge(final, facility, on="공연시설ID", how="left")
-    merged = pd.merge(merged, concert, on="공연ID(mt20Id)", how="left")
-    return merged
+---
 
-df = load_data()
+### 📌 기능 안내
+- **📍 공연 검색**: 공연ID나 공연명을 입력해 상세 정보를 조회할 수 있습니다.
+- **🔎 유사도 기반 추천**: 공연과 유사한 벡터를 가진 공연장의 Top-N을 추천합니다.
+- **🎨 벡터 시각화**: PCA 기반 공연 클러스터링 시각화를 제공합니다.
+- **🧠 신규 벡터 기반 추천**: 직접 입력한 공연벡터로 가장 유사한 공연장을 예측합니다.
+
+---
+
+### 🗂️ 좌측 메뉴에서 기능을 선택하세요!
+""")
